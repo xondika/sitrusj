@@ -28,6 +28,10 @@
   color: #61dafb;
 }
 
+.avatar {
+  border-radius: 50%;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
@@ -36,3 +40,20 @@
     transform: rotate(360deg);
   }
 }
+
+.text-window {
+  height: 20vh;
+  width: 30vw;
+  border: 1px solid #ccc;
+  padding: 10px;
+  overflow-y: auto;
+  word-wrap: break-word; /* Ensures long words break to fit the width */
+  white-space: pre-wrap;
+}
+
+.container {
+  display: 'flex';
+  justifyContent: 'start';
+  alignItems: 'left';
+  padding: '2px';
+};

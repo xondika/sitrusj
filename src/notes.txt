@@ -1,0 +1,1 @@
+PIN na zapnutí senzorů: 47
