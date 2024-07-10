@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Editor } from '@monaco-editor/react';
+import { useState, useEffect } from 'react';
+import { Editor, useMonaco } from '@monaco-editor/react';
 
 //import { add } from './kinematics.ts';
 
@@ -21,7 +21,6 @@ export default function CodeEditor({
     const [code, setCode] = useState(
 `//import * as robutek from 'robutek';
 //import { Servo } from 'servo';
-//import * as adc from 'adc';
 `);
 
     const compileAndRun = () => {
@@ -103,7 +102,7 @@ export default function CodeEditor({
                     console.log(rotationVelocity);
                     setVelocity([rotationVelocity / 2, -rotationVelocity / 2]);
                     const rad = payload.angle / 180 * Math.PI;
-                    const angular = payload.velocity / 82;
+                    const angular = payload.velocity / 80;
                     if( payload.angle !== 0 ){
                         setTimeout(() => {
                             rotation = rotation + rad;
@@ -113,7 +112,7 @@ export default function CodeEditor({
                             setVelocity([0, 0]);
                             executing = false;
                             worker.postMessage({ action: "stop" });
-                        }, Math.abs(rad) / 60 * 1000 / angular);
+                        }, Math.abs(rad) / 60 * 900 / angular);
                     }
                 }
                 if( action === "setDraw" ){
@@ -136,16 +135,27 @@ export default function CodeEditor({
             console.log("worker unavailable");
         }
     };
+
+
+    const handleEditorDidMount = (editor, monaco) => {
+        // here is another way to get monaco instance
+        // you can also store it in `useRef` for further usage
+        monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+            noSemanticValidation: true,
+            //noSyntaxValidation: true,
+        });
+    }
     return (
         <div>
             <h1>TypeScript Code Editor</h1>
             <Editor
         height={window.innerHeight * 0.40}
         width={window.innerWidth * 0.32}
-        language="javascript"
+        language="typescript"
         theme="vs-dark"
         value={code}
         onChange={(c) => setCode(c)}
+        onMount={handleEditorDidMount}
             />
             <button onClick={compileAndRun}>Run Code</button>
             <h2>Output:</h2>

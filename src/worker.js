@@ -2,14 +2,9 @@ import { shouldInterruptAfterDeadline, newQuickJSAsyncWASMModule, UsingDisposabl
 
 let moduleCache = {};
 let output = "";
-let sensorReadings = [0, 0, 0, 0];
+let sensorReadings = [];
+let sensorOffset = 4;
 let velocity = 0;
-let configuredAdc = {
-    4: 0,
-    5: 1,
-    6: 2,
-    7: 3
-}
 
 // Cleanup for setInterval
 class QuickJSInterval extends UsingDisposable {
@@ -45,8 +40,6 @@ class QuickJSInterval extends UsingDisposable {
 let eventListeners = {
     "sensorReadings": (event) => {
         sensorReadings = event.data.payload;
-        //console.log("sensorReadings:", sensorReadings)
-        //postMessage({action: "idk"})
     }
 }
 
@@ -78,17 +71,18 @@ async function initializeVM(vm) {
 
     const robot = vm.newObject();
 
+    setupPins(vm, robot);
     setUpMotors(vm, robot);
     setUpSensors(vm, robot);
 
     setupServo(vm, robot);
-    setupPins(vm, robot);
     vm.setProp(vm.global, "robutek", robot);
 }
 
 function addFunction(vm, name, func, parent = vm.global) {
     const functionHandle = vm.newFunction(name, func);
     vm.setProp(parent, name, functionHandle);
+    vm.setProp(vm.global, name, functionHandle);
     functionHandle.dispose();
 }
 
@@ -223,6 +217,8 @@ function setUpMotors(vm, robot) {
     addFunction(vm, "stop", () => {
         postMessage({ action: "setVelocity", payload: [0, 0] });
     }, robot);
+
+    vm.evalCode("setSpeed(200)")
 }
 
 function setUpSensors(vm, robot) {
@@ -231,60 +227,83 @@ function setUpSensors(vm, robot) {
     addFunction(vm, "read", (pin) => {
         //console.log("pin:", sensorReadings[vm.getNumber(pin)])
         const idx = vm.getNumber(pin);
-        if(configuredAdc[idx] !== undefined){
-            return vm.newNumber(sensorReadings[configuredAdc[idx]]);
+        if(idx >= 4 && idx <= 8){
+            return vm.newNumber(sensorReadings[idx - sensorOffset]);
         }
         postMessage({ action: "print", payload: "Error: invalid reading" });
         return NaN;
     }, adcHandle);
 
     addFunction(vm, "configure", (pin) => {
-        configuredAdc[vm.getNumber(pin)] = vm.getNumber(pin) - 4;
+
     }, adcHandle);
     adcHandle.dispose();
 
-    addFunction(vm, "switchSensors", (value) => {
-        const promise = vm.newPromise();
-        postMessage({ action: "switchSensors", payload: vm.getNumber(value) });
-        eventListeners["switchedSensors"] = (event) => {
-            promise.resolve();
+
+    const swHandle = vm.newFunction("switchSensors", (value) => {
+        if(vm.getNumber(value) === 0){
+            sensorOffset = 0;
+        } else {
+            sensorOffset = 4;
         }
-        promise.settled.then(vm.runtime.executePendingJobs);
-        return promise.handle;
-    }, robot);
+    });
+    vm.setProp(robot, "switchSensors", swHandle);
+    vm.setProp(vm.global, "switchSensors", swHandle);
+    swHandle.dispose();
+
+    const sensors = vm.newObject();
+    const sp = (name, val) => {
+        vm.setProp(sensors, name, vm.newString(val));
+    };
+    sp("WheelFR", "WheelFR");
+    sp("WheelFL", "WheelFL");
+    sp("WheelBL", "WheelBL");
+    sp("WheelBR", "WheelBR");
+
+    sp("LineFR", "LineFR");
+    sp("LineFL", "LineFL");
+    sp("LineBL", "LineBL");
+    sp("LineBR", "LineBR");
+
+    vm.setProp(robot, "SensorType", sensors);
+    vm.setProp(vm.global, "SensorType", sensors);
+    sensors.dispose();
+
 
     const modExports = vm.unwrapResult(vm.evalCode(`
-export const readSensor = async (sensor) => {
+export function readSensor(sensor) {
     switch (sensor) {
-        case 'W_FR':
-            await switchSensors(0);
-            return adc.read(robutek.Pins.Sens1);
-        case 'W_FL':
-            await switchSensors(0);
-            return adc.read(robutek.Pins.Sens2);
-        case 'W_BL':
-            await switchSensors(0);
-            return adc.read(robutek.Pins.Sens3);
-        case 'W_BR':
-            await switchSensors(0);
-            return adc.read(robutek.Pins.Sens4);
-        case 'L_FR':
-            await switchSensors(1);
-            return adc.read(robutek.Pins.Sens1);
-        case 'L_FL':
-            await switchSensors(1);
-            return adc.read(robutek.Pins.Sens2);
-        case 'L_BL':
-            await switchSensors(1);
-            return adc.read(robutek.Pins.Sens3);
-        case 'L_BR':
-            await switchSensors(1);
-            return adc.read(robutek.Pins.Sens4);
+        case SensorType.WheelFR:
+            switchSensors(0);
+            return adc.read(Pins.Sens1);
+        case SensorType.WheelFL:
+            switchSensors(0);
+            return adc.read(Pins.Sens2);
+        case SensorType.WheelBL:
+            switchSensors(0);
+            return adc.read(Pins.Sens3);
+        case SensorType.WheelBR:
+            switchSensors(0);
+            return adc.read(Pins.Sens4);
+        case SensorType.LineFR:
+            switchSensors(1);
+            return adc.read(Pins.Sens1);
+        case SensorType.LineFL:
+            switchSensors(1);
+            return adc.read(Pins.Sens2);
+        case SensorType.LineBL:
+            switchSensors(1);
+            return adc.read(Pins.Sens3);
+        case SensorType.LineBR:
+            switchSensors(1);
+            return adc.read(Pins.Sens4);
         default:
-            return NaN;
+            throw new Error('Invalid sensor type');
     }
 }`));
     vm.setProp(robot, "readSensor", vm.getProp(modExports, "readSensor"));
+    vm.setProp(vm.global, "readSensor", vm.getProp(modExports, "readSensor"));
+    modExports.dispose();
 }
 
 function setupServo(vm, robot) {
@@ -305,6 +324,7 @@ class Servo {
     vm.setProp(penPos, "Unload", vm.newNumber(0));
 
     vm.setProp(robot, "PenPos", penPos);
+    vm.setProp(vm.global, "PenPos", penPos);
     penPos.dispose();
 }
 
@@ -327,10 +347,14 @@ function setupPins(vm, robot) {
     sp("Sens2", 5);
     sp("Sens3", 6);
     sp("Sens4", 7);
+    sp("Servo1", 21);
+    sp("Servo2", 38);
 
     sp("SensSW", 8);
     sp("SensEN", 47);
     vm.setProp(robot, "Pins", pins);
+    vm.setProp(vm.global, "Pins", pins);
+    pins.dispose();
 }
 
 function runCode(modules, code) {
@@ -347,10 +371,10 @@ ${code}
 })()` );
         vm.runtime.executePendingJobs();
         if (result.error) {
-            console.log("Execution failed:", vm.getString(result.error));
+            //console.log("Execution failed:", vm.getString(result.error));
             result.error.dispose();
         } else {
-            console.log("Success:", vm.getString(result.value));
+            //console.log("Success:", vm.getString(result.value));
             result.value.dispose();
         }
     });

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "homepage": "https://xondika.github.io/sitrusj",
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
     "@pixi/core": "^7.4.2",

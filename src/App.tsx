@@ -7,10 +7,9 @@ import Robot from './robot.tsx';
 import { Type, Shape, OccupancyGrid, line, rectangle, square } from './shapes.ts';
 
 
-const sensorPositions = {
-  front: [[37, -10], [37, 10], [0, 10], [0, -10]],
-  side: [[24, -37], [24, 37], [-24, 37], [-24, -37]]
-}
+const sensorPositions = [[37, 10], [37, -10], [0, -10], [0, 10],
+  [24, 37], [24, -37], [-24, -37], [-24, 37]]
+
 
 const containerStyle = {
   display: 'flex',
@@ -146,9 +145,8 @@ export default function App() {
   }
 
   const readSensors = () => {
-    const sensors = frontSensors.current ? sensorPositions.front : sensorPositions.side;
     //console.log(sensors);
-    let result = sensors.map((sensorPos) => {
+    let result = sensorPositions.map((sensorPos) => {
       let sum = 0;
       let squares = 0;
       for(let dx = -1; dx <= 1; dx++){
