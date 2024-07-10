@@ -31,12 +31,28 @@ function AddObstacles({ obstacles, setObstacles, setGrabbing }) {
   );
 };
 
+function updateSelectedShape(event) {
+  let shapeButtons = document.querySelectorAll('.shape-selector button');
+  shapeButtons.forEach((button) => {
+    button.classList.remove('selected');
+  });
+
+  let grabButton = document.querySelector('.grab-btn');
+  if (grabButton !== null) grabButton.classList.remove('selected');
+
+  event.target.classList.add('selected');
+}
+
 function DrawShapes({ drawings, setDrawings, grabbing, setGrabbing, addShape }) {
   const [start, setStart] = useState(null);
   const [idx, setIdx] = useState(0);
   const [type, setType] = useState(Type.Line)
 
-  const handleClick = (shapeType) => {
+  const handleShapeClick = (event, shapeType) => {
+    updateSelectedShape(event);
+    updateShapeType(shapeType);
+  }
+  const updateShapeType = (shapeType) => {
     setGrabbing(false);
     setType(shapeType);
   }
@@ -70,16 +86,16 @@ function DrawShapes({ drawings, setDrawings, grabbing, setGrabbing, addShape }) 
   }
 
   return (
-    <div>
-      <button onClick={() => handleClick(Type.Line)}>
+    <div className='shape-selector'>
+      <button onClick={(e) => handleShapeClick(e, Type.Line)}>
         Draw line
       </button>
 
-      <button onClick={() => handleClick(Type.Rectangle)}>
+      <button onClick={(e) => handleShapeClick(e, Type.Rectangle)}>
         Draw rectangle
       </button>
 
-      <button onClick={() => handleClick(Type.Circle)}>
+      <button onClick={(e) => handleShapeClick(e, Type.Circle)}>
         Draw circle
       </button>
     </div>
@@ -213,6 +229,11 @@ export default function App() {
     }
   }
 
+  const handleGrabBtnClick = (event) => {
+    updateSelectedShape(event);
+    setGrabbing(true);
+  }
+
   return (
     <div>
       <div style={containerStyle} onContextMenu={(e) => e.preventDefault()}>
@@ -232,7 +253,7 @@ export default function App() {
           grid={grid} workerRef={workerRef} readSensors={readSensors} frontSensors={frontSensors}
         />
       </div>
-      <button onClick={() => { setGrabbing(true) }}>
+      <button onClick={(e) => { handleGrabBtnClick(e) }} className='grab-btn selected'>
         Grab turtle
       </button>
 
