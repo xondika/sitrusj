@@ -157,8 +157,8 @@ export default function CodeEditor({
         onChange={(c) => setCode(c)}
         onMount={handleEditorDidMount}
             />
-            <button onClick={compileAndRun}>Run Code</button>
-            <h2>Output:</h2>
+            <button onClick={compileAndRun} className='run-btn'>Run Code</button>
+            <h2 className='output-text'>Output:</h2>
             <div className="text-window">
         {output}
         </div>
