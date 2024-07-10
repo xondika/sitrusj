@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/sitrusj/static/css/main.b5efc7f0.css",
-    "main.js": "/sitrusj/static/js/main.17c72b68.js",
-    "static/js/341.c637a15e.chunk.js": "/sitrusj/static/js/341.c637a15e.chunk.js",
+    "main.js": "/sitrusj/static/js/main.0459bc3e.js",
+    "static/js/341.235b8e8b.chunk.js": "/sitrusj/static/js/341.235b8e8b.chunk.js",
     "static/js/343.5cf2d9b9.chunk.js": "/sitrusj/static/js/343.5cf2d9b9.chunk.js",
     "static/js/667.c727fe28.chunk.js": "/sitrusj/static/js/667.c727fe28.chunk.js",
     "static/js/662.6bba74cd.chunk.js": "/sitrusj/static/js/662.6bba74cd.chunk.js",
@@ -11,14 +11,14 @@
     "static/media/turtle.png": "/sitrusj/static/media/turtle.ae9469480b5476e8ff3f.png",
     "index.html": "/sitrusj/index.html",
     "main.b5efc7f0.css.map": "/sitrusj/static/css/main.b5efc7f0.css.map",
-    "main.17c72b68.js.map": "/sitrusj/static/js/main.17c72b68.js.map",
-    "341.c637a15e.chunk.js.map": "/sitrusj/static/js/341.c637a15e.chunk.js.map",
+    "main.0459bc3e.js.map": "/sitrusj/static/js/main.0459bc3e.js.map",
+    "341.235b8e8b.chunk.js.map": "/sitrusj/static/js/341.235b8e8b.chunk.js.map",
     "667.c727fe28.chunk.js.map": "/sitrusj/static/js/667.c727fe28.chunk.js.map",
     "662.6bba74cd.chunk.js.map": "/sitrusj/static/js/662.6bba74cd.chunk.js.map",
     "730.12a20934.chunk.js.map": "/sitrusj/static/js/730.12a20934.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.b5efc7f0.css",
-    "static/js/main.17c72b68.js"
+    "static/js/main.0459bc3e.js"
   ]
 }
